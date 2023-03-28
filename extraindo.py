@@ -21,6 +21,19 @@ def simbolos() -> list:
 
     return criptos
 
+def cotacao() -> list:
+    """
+    Função para extrair o resumo das últimas 24 horas de negociação.
+    """
+    
+    ativos = simbolos()
+    cotacao = list()
+    for ativo in ativos[0]:
+        dado = requests.get(f'https://api.mercadobitcoin.net/api/v4/tickers/?symbols={ativo}-BRL').json()
+        cotacao.append(dado)
+
+    return cotacao
+
 def extrair(dataInicio=None, dataFim=None) -> list:
     """
     Função para extrair os dados da API de Dados do Mecado Bitcoin de um intervalo de tempo, ou das últimas 1000 negociações caso não seja informado período.
@@ -40,4 +53,4 @@ def extrair(dataInicio=None, dataFim=None) -> list:
         dados.append(req)
     return dados
 
-print(simbolos())
+print(cotacao())
