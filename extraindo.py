@@ -6,7 +6,7 @@ def existeArquivo(nomeArquivo:str):
     if os.path.exists(f'{nomeArquivo}.csv'):
         if os.path.exists(f'{nomeArquivo}-backup.csv'):
             os.remove(f'{nomeArquivo}-backup.csv')
-    os.rename(f'{nomeArquivo}.csv', f'{nomeArquivo}-backup.csv')
+        os.rename(f'{nomeArquivo}.csv', f'{nomeArquivo}-backup.csv')
 
 
 def simbolos() -> list:
@@ -60,18 +60,23 @@ def extrair(dataInicio=None, dataFim=None) -> list:
     dataFim: data final do período desejado (obrigatóriamente em Era Unix), caso seja informado dataFim, deverá também ser informado dataInicio.
     """
     
-    dados = list()
+    trades = list()
     ativos = simbolos()
     for ativo in ativos[0]:
         try:
             req = requests.get(f'https://api.mercadobitcoin.net/api/v4/{ativo}-BRL/trades/?from={dataInicio}/?to={dataFim}').json()
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
-        dados.append(req)
-    existeArquivo('trades')
-    pd.DataFrame({
-        'ativo':ativos[0],
-        'trade':dados
-    }).to_csv('trades.csv', index=False, sep=';')
+        l = [dict(zip([f'{ativo}'], [x])) for x in req]
+        trades.extend(l)
+    tradesNovo = [dict(v, ativo=k) for x in trades for k, v in x.items()]
+    
 
-    return dados
+
+
+    existeArquivo('trades')
+    pd.DataFrame(tradesNovo).to_csv('trades.csv', sep=';', index=False)
+
+    return tradesNovo
+
+extrair()
