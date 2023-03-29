@@ -1,4 +1,13 @@
 import requests
+import pandas as pd
+import os
+
+def existeArquivo(nomeArquivo:str):
+    if os.path.exists(f'{nomeArquivo}.csv'):
+        if os.path.exists(f'{nomeArquivo}-backup.csv'):
+            os.remove(f'{nomeArquivo}-backup.csv')
+    os.rename(f'{nomeArquivo}.csv', f'{nomeArquivo}-backup.csv')
+
 
 def simbolos() -> list:
     """
@@ -17,8 +26,11 @@ def simbolos() -> list:
             case other:
                 pass
     
-
-
+    existeArquivo('simbolos')
+    pd.DataFrame({
+        'ativo':criptos[0],
+        'descricao':criptos[1]
+    }).to_csv('simbolos.csv', index=False, sep=';')
     return criptos
 
 def cotacao() -> list:
@@ -32,11 +44,16 @@ def cotacao() -> list:
         dado = requests.get(f'https://api.mercadobitcoin.net/api/v4/tickers/?symbols={ativo}-BRL').json()
         cotacao.append(dado)
 
+    existeArquivo('cotacao')
+    pd.DataFrame({
+        'ativo':ativos[0],
+        'cotacao':dado
+    }).to_csv('cotacao.csv', index=False, sep=';')
     return cotacao
 
 def extrair(dataInicio=None, dataFim=None) -> list:
     """
-    Função para extrair os dados da API de Dados do Mecado Bitcoin de um intervalo de tempo, ou das últimas 1000 negociações caso não seja informado período.
+    Função para extrair os dados da API de Dados do Mecado Bitcoin de um intervalo de tempo, ou das últimas 200 negociações caso não seja informado período.
 
     Argumentos opcionais:
     dataInicio: data inicial do período desejado (obrigatóriamente em Era Unix), caso seja informado dataInicio, deverá também ser informado dataFim.
@@ -51,6 +68,10 @@ def extrair(dataInicio=None, dataFim=None) -> list:
         except requests.exceptions.RequestException as e:
             raise SystemExit(e)
         dados.append(req)
-    return dados
+    existeArquivo('trades')
+    pd.DataFrame({
+        'ativo':ativos[0],
+        'trade':dados
+    }).to_csv('trades.csv', index=False, sep=';')
 
-print(cotacao())
+    return dados
