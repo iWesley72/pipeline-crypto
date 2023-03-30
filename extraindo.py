@@ -3,6 +3,11 @@ import pandas as pd
 import os
 
 def existeArquivo(nomeArquivo:str):
+    """
+    Função para confirmar a existência do arquivo, e caso exista renomear o mesmo, para então ser tratado como imagem.
+    """
+
+
     if os.path.exists(f'{nomeArquivo}.csv'):
         if os.path.exists(f'{nomeArquivo}-backup.csv'):
             os.remove(f'{nomeArquivo}-backup.csv')
@@ -40,15 +45,19 @@ def cotacao() -> list:
     
     ativos = simbolos()
     cotacao = list()
+
     for ativo in ativos[0]:
-        dado = requests.get(f'https://api.mercadobitcoin.net/api/v4/tickers/?symbols={ativo}-BRL').json()
-        cotacao.append(dado)
+        try:
+            req = requests.get(f'https://api.mercadobitcoin.net/api/v4/tickers/?symbols={ativo}-BRL').json()
+        except requests.exceptions.RequestException as e:
+            raise SystemExit(e)
+        l = [dict(zip([f'{ativo}'], [x])) for x in req]
+        cotacao.extend(l)
+    cotacaoNovo = [dict(v, ativo=k) for x in cotacao for k, v in x.items()]
+
 
     existeArquivo('cotacao')
-    pd.DataFrame({
-        'ativo':ativos[0],
-        'cotacao':dado
-    }).to_csv('cotacao.csv', index=False, sep=';')
+    pd.DataFrame(cotacaoNovo).to_csv('cotacao.csv', sep=';', index=False)
     return cotacao
 
 def extrair(dataInicio=None, dataFim=None) -> list:
@@ -78,5 +87,3 @@ def extrair(dataInicio=None, dataFim=None) -> list:
     pd.DataFrame(tradesNovo).to_csv('trades.csv', sep=';', index=False)
 
     return tradesNovo
-
-extrair()
