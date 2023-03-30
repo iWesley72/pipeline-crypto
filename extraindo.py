@@ -1,3 +1,7 @@
+"""
+Módulo para extração de dados sobre criptomoedas, disponibilizados pela API do Mercado Bitcoin.
+"""
+
 import requests
 import pandas as pd
 import os
@@ -31,11 +35,11 @@ def simbolos() -> list:
             case other:
                 pass
     
-    existeArquivo('simbolos')
+    existeArquivo('cripto')
     pd.DataFrame({
-        'ativo':criptos[0],
+        'id_cripto':criptos[0],
         'descricao':criptos[1]
-    }).to_csv('simbolos.csv', index=False, sep=';')
+    }).to_csv('cripto.csv', index=False, sep=';')
     return criptos
 
 def cotacao() -> list:
@@ -53,7 +57,7 @@ def cotacao() -> list:
             raise SystemExit(e)
         l = [dict(zip([f'{ativo}'], [x])) for x in req]
         cotacao.extend(l)
-    cotacaoNovo = [dict(v, ativo=k) for x in cotacao for k, v in x.items()]
+    cotacaoNovo = [dict(v, id_cripto=k) for x in cotacao for k, v in x.items()]
 
 
     existeArquivo('cotacao')
@@ -78,7 +82,7 @@ def extrair(dataInicio=None, dataFim=None) -> list:
             raise SystemExit(e)
         l = [dict(zip([f'{ativo}'], [x])) for x in req]
         trades.extend(l)
-    tradesNovo = [dict(v, ativo=k) for x in trades for k, v in x.items()]
+    tradesNovo = [dict(v, id_cripto=k) for x in trades for k, v in x.items()]
     
 
 
@@ -87,3 +91,4 @@ def extrair(dataInicio=None, dataFim=None) -> list:
     pd.DataFrame(tradesNovo).to_csv('trades.csv', sep=';', index=False)
 
     return tradesNovo
+
