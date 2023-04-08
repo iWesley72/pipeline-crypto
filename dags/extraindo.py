@@ -28,12 +28,11 @@ def simbolos() -> list:
 
     criptos = [[], []]
     for i in range(0, len(simb[2])):
-        match simb[2][i]:
-            case 'CRYPTO':
-                criptos[0].append(simb[0][i])
-                criptos[1].append(simb[1][i])
-            case other:
-                pass
+        if simb[2][i] == 'CRYPTO':
+            criptos[0].append(simb[0][i])
+            criptos[1].append(simb[1][i])
+        else:
+            pass
     
     existeArquivo('cripto')
     pd.DataFrame({

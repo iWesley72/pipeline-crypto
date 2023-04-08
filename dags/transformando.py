@@ -23,4 +23,3 @@ def transformar(nomeArquivo:str):
 
     existeArquivo(f'{nomeArquivo}-tratado')
     df.to_csv(f'{nomeArquivo}-tratado.csv', sep=';', index=False)
-    return df
