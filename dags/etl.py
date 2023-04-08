@@ -2,8 +2,8 @@ from airflow import DAG
 from airflow.operators.python import PythonOperator
 from datetime import datetime
 import extraindo
-# import carregando
 import transformando
+import carregando
 
 with DAG("etl",
          start_date=datetime(2023, 1, 1),
@@ -35,4 +35,23 @@ with DAG("etl",
         op_kwargs={'nomeArquivo':'cotacao'}
     )
 
-extraindo_simbolos_trades >> extraindo_cotacao >> transformando_trades >> transformando_cotacao
+    carregando_simbolos = PythonOperator(
+        task_id="carregando_simbolos",
+        python_callable=carregando.atualizarTabela,
+        op_kwargs={'tabela':'cripto'}
+    )
+
+    carregando_trades = PythonOperator(
+        task_id="carregando_trades",
+        python_callable=carregando.atualizarTabela,
+        op_kwargs={'tabela':'trades'}
+    )
+
+    carregando_cotacao = PythonOperator(
+        task_id="carregando_cotacao",
+        python_callable=carregando.atualizarTabela,
+        op_kwargs={'tabela':'cotacao'}
+    )
+
+
+extraindo_simbolos_trades >> extraindo_cotacao >> transformando_trades >> transformando_cotacao >> carregando_simbolos >> carregando_cotacao >> carregando_trades

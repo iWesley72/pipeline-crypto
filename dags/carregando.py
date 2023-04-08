@@ -9,9 +9,9 @@ def conectar():
         """
 
         conn = psycopg2.connect(
-            user='usuario',
-            password='senha',
-            host='127.0.0.1',
+            user='postgres',
+            password='admin123',
+            host='host.docker.internal',
             port='5432',
             database='cripto'
         )
@@ -22,13 +22,22 @@ def conectar():
 
 def atualizarTabela(tabela:str):
     conn = conectar()
-    columns = pd.read_csv(f'{tabela}-tratado.csv', sep=';').columns.values.tolist()
+    if tabela == 'cripto':
+        columns = pd.read_csv(f'{tabela}.csv', sep=';').columns.values.tolist()
+    else:
+        columns = pd.read_csv(f'{tabela}-tratado.csv', sep=';').columns.values.tolist()
     cursor = conn.cursor()
     try:
-        with open(f'{tabela}-tratado.csv') as csvFile:
-            next(csvFile)
-            cursor.copy_from(csvFile, tabela, sep=';', null='', columns=columns)
-            conn.commit()
+        if tabela == 'cripto':
+            with open(f'{tabela}.csv') as csvFile:
+                next(csvFile)
+                cursor.copy_from(csvFile, tabela, sep=';', null='', columns=columns)
+                conn.commit()
+        else:
+            with open(f'{tabela}-tratado.csv') as csvFile:
+                next(csvFile)
+                cursor.copy_from(csvFile, tabela, sep=';', null='', columns=columns)
+                conn.commit()
     except (Exception, psycopg2.Error) as err:
         print('Erro ao atualizar tabela\n', err)
         conn.rollback()
